@@ -1,15 +1,15 @@
 public class Node {
     
-    public String parent;
+    public int parent;
 
     public int rank;
 
-    public Node(String p){
+    public Node(int p){
         this.parent = p;
         this.rank = 0;
     }
 
-    public void setParent(String p){
+    public void setParent(int p){
         this.parent = p;
     }
 

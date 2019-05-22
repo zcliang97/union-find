@@ -1,18 +1,21 @@
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class UnionFind{
 
 	// map to record string -> node
-	public static HashMap<String, Node> nodes;
+	public HashMap<Integer, Node> nodes;
 
-    public UnionFind(){
-			nodes = new HashMap<String, Node>();
-    }
+	public UnionFind(){
+		nodes = new HashMap<Integer, Node>();
+	}
 
-	public void union(String p, String q){
-		String rootP = find(p);
-		String rootQ = find(q);
+	public void union(int p, int q){
+		int rootP = find(p);
+		int rootQ = find(q);
 
 		// if the two roots are the same, already in a component
 		if (rootP == rootQ) return;
@@ -28,10 +31,11 @@ public class UnionFind{
 		} else {
 			nodep.setParent(rootQ);
 			nodeq.setRank(nodeq.rank + 1);
-		}
+		} 
 	}
 
-  public String find(String p){
+	//recursively do path compression and find the root of the component
+  	public int find(int p){
 		Node node = nodes.get(p);
 		if (node.parent != p){
 			node.setParent(find(node.parent));
@@ -39,23 +43,24 @@ public class UnionFind{
 		return node.parent;
 	}
 
-	public void addEdge(String input){
-		String[] pair = input.split(" ", 2);
-		if (!nodes.containsKey(pair[0])){
-			nodes.put(pair[0], new Node(pair[0]));
+	public void addEdge(int p, int q){
+		if (!nodes.containsKey(p)){
+			nodes.put(p, new Node(p));
 		}
-		if (!nodes.containsKey(pair[1])){
-			nodes.put(pair[1], new Node(pair[1]));
+		if (!nodes.containsKey(q)){
+			nodes.put(q, new Node(q));
 		}
-		union(pair[0], pair[1]);
+		union(p, q);
 	}
 
-	public String outputComponents(){
-		StringBuilder sb = new StringBuilder();
-		for (String key : nodes.keySet()){
-			// Need to run find again for all components
-			sb.append(key + " " + this.find(key) + "\n");
-		}
-		return sb.toString();
-	}
+	public String outputComponents() {
+        Set<Entry<Integer, Node>> nodeSet = this.nodes.entrySet();
+        nodeSet.forEach((node) -> {
+            this.find(node.getKey());
+        });
+
+        StringBuilder sb = new StringBuilder();
+        return nodeSet.parallelStream()
+			.map(node -> node.getKey() + " " +  node.getValue().parent + "\n").collect(Collectors.joining());
+    }
 }

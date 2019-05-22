@@ -10,6 +10,12 @@ class CCServer {
 	// max size of block for each process to run
 	public static final int BLOCK_SIZE = 10;
 
+	public Byte[] toObjects(byte[] bytesPrim) {
+    	Byte[] bytes = new Byte[bytesPrim.length];
+    	Arrays.setAll(bytes, n -> bytesPrim[n]);
+    	return bytes;
+	}
+
 	public static void main(String args[]) throws Exception {
 		if (args.length != 1) {
 			System.out.println("usage: java CCServer port");
@@ -38,19 +44,27 @@ class CCServer {
 				DataInputStream dis = new DataInputStream(socket.getInputStream());
 				byte[] bytes = new byte[dis.readInt()];
 				dis.readFully(bytes);
-				String data = new String(bytes, StandardCharsets.UTF_8);
-				BufferedReader br = new BufferedReader(new StringReader(data));
+				ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 
 				// get components
 				UnionFind uf = new UnionFind();
-				String line = null;
-				
-				long startTime = System.currentTimeMillis();
-				while ((line = br.readLine()) != null){
-					uf.addEdge(line);
+
+				int p, q, b;
+				p = q = b = 0;
+				while (bais.available() > 0){
+					b = bais.read();
+					while (b != 32){
+						p = 10*p + (b-'0');
+						b = bais.read();
+					}
+					b = bais.read();
+					while (b != 10){
+						q = 10*q + (b-'0');
+						b = bais.read();
+					}
+					uf.addEdge(p, q);
+					p = q = 0;
 				}
-				long endTime = System.currentTimeMillis();
-				System.out.println("Time: " + (endTime - startTime));
 
 				String components = uf.outputComponents();
 				
